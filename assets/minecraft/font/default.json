@@ -3,8 +3,8 @@
     {
       "type": "bitmap",
       "file": "cleanresources:font/badges/owner.png",
-      "ascent": 9,
-      "height": 10,
+      "ascent": 8,
+      "height": 9,
       "chars": [
         "\ue100"
       ]
@@ -12,8 +12,8 @@
     {
       "type": "bitmap",
       "file": "cleanresources:font/badges/manager.png",
-      "ascent": 9,
-      "height": 10,
+      "ascent": 8,
+      "height": 9,
       "chars": [
         "\ue101"
       ]
@@ -21,8 +21,8 @@
     {
       "type": "bitmap",
       "file": "cleanresources:font/badges/admin.png",
-      "ascent": 9,
-      "height": 10,
+      "ascent": 8,
+      "height": 9,
       "chars": [
         "\ue102"
       ]
@@ -30,8 +30,8 @@
     {
       "type": "bitmap",
       "file": "cleanresources:font/badges/sr_mod.png",
-      "ascent": 9,
-      "height": 10,
+      "ascent": 8,
+      "height": 9,
       "chars": [
         "\ue103"
       ]
@@ -39,8 +39,8 @@
     {
       "type": "bitmap",
       "file": "cleanresources:font/badges/mod.png",
-      "ascent": 9,
-      "height": 10,
+      "ascent": 8,
+      "height": 9,
       "chars": [
         "\ue104"
       ]
@@ -48,8 +48,8 @@
     {
       "type": "bitmap",
       "file": "cleanresources:font/badges/helper.png",
-      "ascent": 9,
-      "height": 10,
+      "ascent": 8,
+      "height": 9,
       "chars": [
         "\ue105"
       ]
@@ -57,8 +57,8 @@
     {
       "type": "bitmap",
       "file": "cleanresources:font/badges/media.png",
-      "ascent": 9,
-      "height": 10,
+      "ascent": 8,
+      "height": 9,
       "chars": [
         "\ue106"
       ]
@@ -66,8 +66,8 @@
     {
       "type": "bitmap",
       "file": "cleanresources:font/badges/rift.png",
-      "ascent": 9,
-      "height": 10,
+      "ascent": 8,
+      "height": 9,
       "chars": [
         "\ue107"
       ]
@@ -75,8 +75,8 @@
     {
       "type": "bitmap",
       "file": "cleanresources:font/badges/champ.png",
-      "ascent": 9,
-      "height": 10,
+      "ascent": 8,
+      "height": 9,
       "chars": [
         "\ue108"
       ]
@@ -84,8 +84,8 @@
     {
       "type": "bitmap",
       "file": "cleanresources:font/badges/elite.png",
-      "ascent": 9,
-      "height": 10,
+      "ascent": 8,
+      "height": 9,
       "chars": [
         "\ue109"
       ]
@@ -93,8 +93,8 @@
     {
       "type": "bitmap",
       "file": "cleanresources:font/badges/hero.png",
-      "ascent": 9,
-      "height": 10,
+      "ascent": 8,
+      "height": 9,
       "chars": [
         "\ue10a"
       ]
@@ -102,8 +102,8 @@
     {
       "type": "bitmap",
       "file": "cleanresources:font/badges/novice.png",
-      "ascent": 9,
-      "height": 10,
+      "ascent": 8,
+      "height": 9,
       "chars": [
         "\ue10b"
       ]
@@ -111,8 +111,8 @@
     {
       "type": "bitmap",
       "file": "cleanresources:font/badges/member.png",
-      "ascent": 9,
-      "height": 10,
+      "ascent": 8,
+      "height": 9,
       "chars": [
         "\ue10c"
       ]
