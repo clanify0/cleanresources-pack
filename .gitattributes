@@ -1,0 +1,9 @@
+*.json text eol=lf
+*.mcmeta text eol=lf
+*.py text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.md text eol=lf
+*.txt text eol=lf
+*.png binary
+*.zip binary
