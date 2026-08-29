@@ -6,6 +6,11 @@ The badge PNGs, both version-specific ZIPs, SHA-1 sidecars, and preview are gene
 python tools/build_packs.py
 ```
 
+When intentionally changing the generated badge artwork, run
+`python tools/build_packs.py --regenerate` once and commit the resulting PNGs.
+Normal release builds reuse those exact committed PNG bytes so local and GitHub
+ZIP hashes remain identical across operating systems.
+
 Tagging a commit with `v*` runs the same verified build in GitHub Actions and publishes the four pack assets through GitHub Releases. CleanResources resolves each `.sha1` sidecar once at startup and caches the last known good hashes, so no player join performs a GitHub request.
 
 The rank characters `U+E100` through `U+E10C` are registered in both

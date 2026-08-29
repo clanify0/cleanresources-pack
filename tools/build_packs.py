@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import argparse
 import hashlib
 import json
 import shutil
@@ -114,13 +115,17 @@ def render_badge(text: str, color_hex: str) -> Image.Image:
     return image
 
 
-def generate_badges() -> None:
+def generate_badges(regenerate: bool = False) -> None:
     BADGE_DIR.mkdir(parents=True, exist_ok=True)
     providers = []
     for badge_id, label, glyph, color in RANKS:
         badge_path = BADGE_DIR / f"{badge_id}.png"
-        image = render_badge(label, color)
-        image.save(badge_path, optimize=True)
+        # Release builds package the committed PNG bytes unchanged. Pillow's
+        # compression output can vary across operating systems even when the
+        # pixels are identical, which would otherwise change release SHA-1s.
+        if regenerate or not badge_path.exists():
+            image = render_badge(label, color)
+            image.save(badge_path, optimize=True)
         providers.append({
             "type": "bitmap",
             "file": f"cleanresources:font/badges/{badge_id}.png",
@@ -271,8 +276,15 @@ def verify_assets() -> None:
 
 
 def main() -> None:
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--regenerate",
+        action="store_true",
+        help="regenerate badge PNG source assets before building",
+    )
+    args = parser.parse_args()
     DIST.mkdir(parents=True, exist_ok=True)
-    generate_badges()
+    generate_badges(args.regenerate)
     generate_preview()
     verify_assets()
     built = {}
