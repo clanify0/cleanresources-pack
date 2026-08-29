@@ -80,7 +80,10 @@ def compact_glyph(glyph: tuple[str, ...]) -> tuple[str, ...]:
 
 def render_badge(text: str, color_hex: str) -> Image.Image:
     width = text_width(text) + 5
-    height = 9
+    # Keep one pixel of breathing room above and below the five-row glyph.
+    # The compact badge is intentionally two pixels shorter than the previous
+    # release, matching the reference rank artwork.
+    height = 7
     image = Image.new("RGBA", (width, height), (0, 0, 0, 0))
     pixels = image.load()
     color = rgb(color_hex)
@@ -92,20 +95,22 @@ def render_badge(text: str, color_hex: str) -> Image.Image:
         for x in range(width):
             pixels[x, y] = base
 
-    # Draw a one-pixel darkened down-right shadow before the white foreground.
+    # Draw a one-pixel darkened shadow strictly to the right of each stroke.
+    # It must not extend below the text; the reference art uses a horizontal
+    # offset only.
     cursor = 2
     for char in text:
         glyph = compact_glyph(FONT[char])
-        for y, row in enumerate(glyph, start=2):
+        for y, row in enumerate(glyph, start=1):
             for x, bit in enumerate(row, start=cursor):
                 if bit == "1":
-                    pixels[x + 1, y + 1] = text_shadow
+                    pixels[x + 1, y] = text_shadow
         cursor += len(glyph[0]) + 1
 
     cursor = 2
     for char in text:
         glyph = compact_glyph(FONT[char])
-        for y, row in enumerate(glyph, start=2):
+        for y, row in enumerate(glyph, start=1):
             for x, bit in enumerate(row, start=cursor):
                 if bit == "1":
                     pixels[x, y] = (255, 255, 255, 255)
@@ -127,8 +132,8 @@ def generate_badges(regenerate: bool = False) -> None:
         providers.append({
             "type": "bitmap",
             "file": f"cleanresources:font/badges/{badge_id}.png",
-            "ascent": 8,
-            "height": 9,
+            "ascent": 6,
+            "height": 7,
             "chars": [glyph],
         })
     FONT_DIR.mkdir(parents=True, exist_ok=True)
@@ -165,7 +170,7 @@ def generate_preview() -> None:
         for row, (badge_id, _label, _glyph, _color) in enumerate(ranks):
             badge = Image.open(BADGE_DIR / f"{badge_id}.png").convert("RGBA")
             badge = badge.resize((badge.width * scale, badge.height * scale), Image.Resampling.NEAREST)
-            y = 20 + row * 40
+            y = 20 + row * 36
             canvas.alpha_composite(badge, (x, y))
     DIST.mkdir(parents=True, exist_ok=True)
     canvas.save(DIST / "rank-badges-preview.png", optimize=True)
@@ -266,7 +271,7 @@ def verify_assets() -> None:
     assert all((BADGE_DIR / f"{badge_id}.png").is_file() for badge_id, *_ in RANKS)
     for badge_id, *_ in RANKS:
         badge = Image.open(BADGE_DIR / f"{badge_id}.png").convert("RGBA")
-        assert badge.size[1] == 9
+        assert badge.size[1] == 7
         assert all(badge.getpixel(corner) == badge.getpixel((1, 1)) for corner in (
             (0, 0), (badge.width - 1, 0), (0, badge.height - 1),
             (badge.width - 1, badge.height - 1),
