@@ -1,6 +1,7 @@
 {
   "pack": {
-    "pack_format": 63,
-    "description": "CleanResources pack"
+    "pack_format": 34,
+    "supported_formats": [34, 64],
+    "description": "MineRift CleanResources source assets"
   }
 }
