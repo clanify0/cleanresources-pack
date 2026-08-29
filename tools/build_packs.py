@@ -73,6 +73,11 @@ def text_width(text: str) -> int:
     return sum(len(FONT[char][0]) + 1 for char in text) - 1
 
 
+def compact_glyph(glyph: tuple[str, ...]) -> tuple[str, ...]:
+    """Keep the readable strokes while fitting labels inside a shorter badge."""
+    return tuple(glyph[index] for index in (0, 1, 3, 5, 6))
+
+
 def render_badge(text: str, color_hex: str) -> Image.Image:
     width = text_width(text) + 5
     height = 9
@@ -81,27 +86,26 @@ def render_badge(text: str, color_hex: str) -> Image.Image:
     color = rgb(color_hex)
     base = shade(color, 1.0)
     text_shadow = shade(color, 0.30)
-    edge = text_shadow
 
-    # A compact square rectangle with one flat rank color and a darkened edge.
+    # A compact square rectangle with one flat rank color and no outline.
     for y in range(height):
         for x in range(width):
-            pixels[x, y] = edge if (y in (0, height - 1) or x in (0, width - 1)) else base
+            pixels[x, y] = base
 
-    # Draw a one-pixel darkened shadow to the right before the white foreground.
+    # Draw a one-pixel darkened down-right shadow before the white foreground.
     cursor = 2
     for char in text:
-        glyph = FONT[char]
-        for y, row in enumerate(glyph, start=1):
+        glyph = compact_glyph(FONT[char])
+        for y, row in enumerate(glyph, start=2):
             for x, bit in enumerate(row, start=cursor):
                 if bit == "1":
-                    pixels[x + 1, y] = text_shadow
+                    pixels[x + 1, y + 1] = text_shadow
         cursor += len(glyph[0]) + 1
 
     cursor = 2
     for char in text:
-        glyph = FONT[char]
-        for y, row in enumerate(glyph, start=1):
+        glyph = compact_glyph(FONT[char])
+        for y, row in enumerate(glyph, start=2):
             for x, bit in enumerate(row, start=cursor):
                 if bit == "1":
                     pixels[x, y] = (255, 255, 255, 255)
@@ -263,10 +267,16 @@ def verify_assets() -> None:
     for badge_id, *_ in RANKS:
         badge = Image.open(BADGE_DIR / f"{badge_id}.png").convert("RGBA")
         assert badge.size[1] == 9
-        assert all(badge.getpixel(corner)[3] == 255 for corner in (
+        assert all(badge.getpixel(corner) == badge.getpixel((1, 1)) for corner in (
             (0, 0), (badge.width - 1, 0), (0, badge.height - 1),
             (badge.width - 1, badge.height - 1),
-        )), f"{badge_id} does not have square opaque corners"
+        )), f"{badge_id} does not have a flat rectangular background"
+        colors = {
+            badge.getpixel((x, y))
+            for x in range(badge.width)
+            for y in range(badge.height)
+        }
+        assert len(colors) == 3, f"{badge_id} has unexpected extra colors"
 
 
 def main() -> None:
