@@ -80,9 +80,9 @@ def compact_glyph(glyph: tuple[str, ...]) -> tuple[str, ...]:
 
 def render_badge(text: str, color_hex: str) -> Image.Image:
     width = text_width(text) + 5
-    # Keep one pixel of breathing room above and below the five-row glyph.
     # The compact badge is intentionally two pixels shorter than the previous
-    # release, matching the reference rank artwork.
+    # release, matching the reference rank artwork. Keep the content flush to
+    # the top so the label is not visibly sagging inside the bitmap.
     height = 7
     image = Image.new("RGBA", (width, height), (0, 0, 0, 0))
     pixels = image.load()
@@ -101,7 +101,7 @@ def render_badge(text: str, color_hex: str) -> Image.Image:
     cursor = 2
     for char in text:
         glyph = compact_glyph(FONT[char])
-        for y, row in enumerate(glyph, start=1):
+        for y, row in enumerate(glyph, start=0):
             for x, bit in enumerate(row, start=cursor):
                 if bit == "1":
                     pixels[x + 1, y] = text_shadow
@@ -110,7 +110,7 @@ def render_badge(text: str, color_hex: str) -> Image.Image:
     cursor = 2
     for char in text:
         glyph = compact_glyph(FONT[char])
-        for y, row in enumerate(glyph, start=1):
+        for y, row in enumerate(glyph, start=0):
             for x, bit in enumerate(row, start=cursor):
                 if bit == "1":
                     pixels[x, y] = (255, 255, 255, 255)
