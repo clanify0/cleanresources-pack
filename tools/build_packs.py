@@ -119,7 +119,8 @@ def generate_badges() -> None:
         })
     FONT_DIR.mkdir(parents=True, exist_ok=True)
     (FONT_DIR / "rank_badges.json").write_text(
-        json.dumps({"providers": providers}, indent=2, ensure_ascii=True) + "\n", encoding="utf-8"
+        json.dumps({"providers": providers}, indent=2, ensure_ascii=True) + "\n",
+        encoding="utf-8", newline="\n"
     )
 
 
@@ -158,16 +159,17 @@ def metadata(variant: str) -> dict:
 
 
 def zip_tree(source: Path, destination: Path) -> None:
-    with zipfile.ZipFile(destination, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as archive:
+    # Stored entries avoid zlib-version differences between Windows and Linux,
+    # keeping the complete ZIP hash reproducible across local/Actions builds.
+    with zipfile.ZipFile(destination, "w", compression=zipfile.ZIP_STORED) as archive:
         for path in sorted(source.rglob("*")):
             if path.is_file():
                 # Fixed metadata makes the release SHA-1 identical on Windows,
                 # Linux/GitHub Actions, and future rebuilds of unchanged assets.
                 info = zipfile.ZipInfo(path.relative_to(source).as_posix(), (2020, 1, 1, 0, 0, 0))
-                info.compress_type = zipfile.ZIP_DEFLATED
+                info.compress_type = zipfile.ZIP_STORED
                 info.external_attr = 0o100644 << 16
-                archive.writestr(info, path.read_bytes(), compress_type=zipfile.ZIP_DEFLATED,
-                                 compresslevel=9)
+                archive.writestr(info, path.read_bytes(), compress_type=zipfile.ZIP_STORED)
 
 
 def build_variant(variant: str) -> tuple[Path, str]:
@@ -179,12 +181,13 @@ def build_variant(variant: str) -> tuple[Path, str]:
             json_file.write_text(canonical, encoding="utf-8", newline="\n")
         shutil.copy2(ROOT / "pack.png", staging / "pack.png")
         (staging / "pack.mcmeta").write_text(
-            json.dumps(metadata(variant), indent=2) + "\n", encoding="utf-8"
+            json.dumps(metadata(variant), indent=2) + "\n", encoding="utf-8", newline="\n"
         )
         destination = DIST / f"cleanresources-{variant}.zip"
         zip_tree(staging, destination)
     digest = hashlib.sha1(destination.read_bytes()).hexdigest().upper()
-    (Path(str(destination) + ".sha1")).write_text(digest + "\n", encoding="ascii")
+    (Path(str(destination) + ".sha1")).write_text(
+        digest + "\n", encoding="ascii", newline="\n")
     return destination, digest
 
 
@@ -231,7 +234,8 @@ def main() -> None:
         built[variant] = {"file": path.name, "sha1": digest}
         print(f"{path.name}: {digest}")
     (DIST / "release-manifest.json").write_text(
-        json.dumps({"schema": 1, "packs": built}, indent=2) + "\n", encoding="utf-8"
+        json.dumps({"schema": 1, "packs": built}, indent=2) + "\n",
+        encoding="utf-8", newline="\n"
     )
     print("Verified 13 unique badges, preserved existing glyphs, and validated both pack ZIPs.")
 
