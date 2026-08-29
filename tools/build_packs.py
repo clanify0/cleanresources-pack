@@ -21,19 +21,19 @@ BADGE_DIR = ASSETS / "cleanresources" / "textures" / "font" / "badges"
 DIST = ROOT / "dist"
 
 RANKS = [
-    ("owner", "OWNER", "\ue100", "#F43F5E"),
-    ("manager", "MANAGER", "\ue101", "#FF5A8B"),
-    ("admin", "ADMIN", "\ue102", "#EF4444"),
-    ("sr_mod", "SR.MOD", "\ue103", "#FB3C65"),
-    ("mod", "MOD", "\ue104", "#FF6B6B"),
-    ("helper", "HELPER", "\ue105", "#22D3EE"),
-    ("media", "MEDIA", "\ue106", "#38BDF8"),
-    ("rift", "RIFT", "\ue107", "#A855F7"),
-    ("champ", "CHAMP", "\ue108", "#F59E0B"),
-    ("elite", "ELITE", "\ue109", "#F97316"),
-    ("hero", "HERO", "\ue10a", "#22C55E"),
-    ("novice", "NOVICE", "\ue10b", "#8B5CF6"),
-    ("member", "MEMBER", "\ue10c", "#8A8A8A"),
+    ("owner", "OWNER", "\ue100", "#F76F86"),
+    ("manager", "MANAGER", "\ue101", "#FF83A8"),
+    ("admin", "ADMIN", "\ue102", "#F37373"),
+    ("sr_mod", "SR.MOD", "\ue103", "#FC6D8C"),
+    ("mod", "MOD", "\ue104", "#FF9090"),
+    ("helper", "HELPER", "\ue105", "#59DEF2"),
+    ("media", "MEDIA", "\ue106", "#6ACEFA"),
+    ("rift", "RIFT", "\ue107", "#BE80F9"),
+    ("champ", "CHAMP", "\ue108", "#F8B648"),
+    ("elite", "ELITE", "\ue109", "#FA9650"),
+    ("hero", "HERO", "\ue10a", "#59D486"),
+    ("novice", "NOVICE", "\ue10b", "#A885F8"),
+    ("member", "MEMBER", "\ue10c", "#A7A7A7"),
 ]
 
 FONT = {
