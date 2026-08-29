@@ -106,8 +106,10 @@ def generate_badges() -> None:
     BADGE_DIR.mkdir(parents=True, exist_ok=True)
     providers = []
     for badge_id, label, glyph, color in RANKS:
-        image = render_badge(label, color)
-        image.save(BADGE_DIR / f"{badge_id}.png", optimize=True)
+        badge_path = BADGE_DIR / f"{badge_id}.png"
+        if not badge_path.exists():
+            image = render_badge(label, color)
+            image.save(badge_path, optimize=True)
         providers.append({
             "type": "bitmap",
             "file": f"cleanresources:font/badges/{badge_id}.png",
@@ -172,6 +174,9 @@ def build_variant(variant: str) -> tuple[Path, str]:
     with tempfile.TemporaryDirectory(prefix=f"cleanresources-{variant}-") as temporary:
         staging = Path(temporary)
         shutil.copytree(ASSETS, staging / "assets")
+        for json_file in (staging / "assets").rglob("*.json"):
+            canonical = json_file.read_text(encoding="utf-8").replace("\r\n", "\n")
+            json_file.write_text(canonical, encoding="utf-8", newline="\n")
         shutil.copy2(ROOT / "pack.png", staging / "pack.png")
         (staging / "pack.mcmeta").write_text(
             json.dumps(metadata(variant), indent=2) + "\n", encoding="utf-8"
