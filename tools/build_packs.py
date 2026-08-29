@@ -15,6 +15,7 @@ from PIL import Image
 ROOT = Path(__file__).resolve().parents[1]
 ASSETS = ROOT / "assets"
 FONT_DIR = ASSETS / "cleanresources" / "font"
+MINECRAFT_FONT_DIR = ASSETS / "minecraft" / "font"
 BADGE_DIR = ASSETS / "cleanresources" / "textures" / "font" / "badges"
 DIST = ROOT / "dist"
 
@@ -72,24 +73,35 @@ def text_width(text: str) -> int:
 
 
 def render_badge(text: str, color_hex: str) -> Image.Image:
-    width = text_width(text) + 4
-    image = Image.new("RGBA", (width, 9), (0, 0, 0, 0))
+    width = text_width(text) + 5
+    height = 10
+    image = Image.new("RGBA", (width, height), (0, 0, 0, 0))
     pixels = image.load()
     color = rgb(color_hex)
     light = shade(color, 1.22)
     base = shade(color, 0.92)
     dark = shade(color, 0.58)
+    text_shadow = shade(color, 0.24)
 
-    for y in range(9):
+    # A full square rectangle: bright top/left edge and dark right/bottom edge.
+    for y in range(height):
         for x in range(width):
-            if (x, y) in {(0, 0), (width - 1, 0), (0, 8), (width - 1, 8)}:
-                continue
             if y == 0 or x == 0:
                 pixels[x, y] = light
-            elif y == 8 or x == width - 1:
+            elif y == height - 1 or x == width - 1:
                 pixels[x, y] = dark
             else:
                 pixels[x, y] = base
+
+    # Draw a one-pixel shadow down and right before the white foreground.
+    cursor = 2
+    for char in text:
+        glyph = FONT[char]
+        for y, row in enumerate(glyph, start=1):
+            for x, bit in enumerate(row, start=cursor):
+                if bit == "1":
+                    pixels[x + 1, y + 1] = text_shadow
+        cursor += len(glyph[0]) + 1
 
     cursor = 2
     for char in text:
@@ -107,14 +119,13 @@ def generate_badges() -> None:
     providers = []
     for badge_id, label, glyph, color in RANKS:
         badge_path = BADGE_DIR / f"{badge_id}.png"
-        if not badge_path.exists():
-            image = render_badge(label, color)
-            image.save(badge_path, optimize=True)
+        image = render_badge(label, color)
+        image.save(badge_path, optimize=True)
         providers.append({
             "type": "bitmap",
             "file": f"cleanresources:font/badges/{badge_id}.png",
-            "ascent": 8,
-            "height": 9,
+            "ascent": 9,
+            "height": 10,
             "chars": [glyph],
         })
     FONT_DIR.mkdir(parents=True, exist_ok=True)
@@ -123,18 +134,35 @@ def generate_badges() -> None:
         encoding="utf-8", newline="\n"
     )
 
+    # Plain chat, LuckPerms prefixes and pasted PUA characters use
+    # minecraft:default. Mirror the rank providers there so raw glyphs work
+    # without a MiniMessage <font:...> wrapper, while preserving other custom
+    # default-font providers.
+    default_path = MINECRAFT_FONT_DIR / "default.json"
+    MINECRAFT_FONT_DIR.mkdir(parents=True, exist_ok=True)
+    existing = json.loads(default_path.read_text(encoding="utf-8")) if default_path.exists() else {"providers": []}
+    badge_files = {provider["file"] for provider in providers}
+    preserved = [
+        provider for provider in existing.get("providers", [])
+        if provider.get("file") not in badge_files
+    ]
+    default_path.write_text(
+        json.dumps({"providers": preserved + providers}, indent=2, ensure_ascii=True) + "\n",
+        encoding="utf-8", newline="\n"
+    )
+
 
 def generate_preview() -> None:
     scale = 4
     rows_left = RANKS[:7]
     rows_right = RANKS[7:]
-    canvas = Image.new("RGBA", (500, 310), (18, 20, 27, 255))
+    canvas = Image.new("RGBA", (500, 330), (18, 20, 27, 255))
     for column, ranks in enumerate((rows_left, rows_right)):
         x = 28 + column * 245
         for row, (badge_id, _label, _glyph, _color) in enumerate(ranks):
             badge = Image.open(BADGE_DIR / f"{badge_id}.png").convert("RGBA")
             badge = badge.resize((badge.width * scale, badge.height * scale), Image.Resampling.NEAREST)
-            y = 24 + row * 40
+            y = 20 + row * 44
             canvas.alpha_composite(badge, (x, y))
     DIST.mkdir(parents=True, exist_ok=True)
     canvas.save(DIST / "rank-badges-preview.png", optimize=True)
@@ -202,6 +230,7 @@ def verify_pack(path: Path, expected_hash: str, variant: str) -> None:
         assert "pack.mcmeta" in names and "pack.png" in names
         assert "assets/cleanresources/font/default.json" in names
         assert "assets/cleanresources/font/rank_badges.json" in names
+        assert "assets/minecraft/font/default.json" in names
         meta = json.loads(archive.read("pack.mcmeta"))
         if variant == "legacy":
             assert meta["pack"]["pack_format"] == 34
@@ -217,12 +246,28 @@ def verify_assets() -> None:
     providers = font["providers"]
     chars = [provider["chars"][0] for provider in providers]
     assert len(providers) == 13 and len(set(chars)) == 13
+    default_font = json.loads((MINECRAFT_FONT_DIR / "default.json").read_text(encoding="utf-8"))
+    default_chars = [
+        row_char
+        for provider in default_font.get("providers", [])
+        for row in provider.get("chars", [])
+        for row_char in row
+        if row_char in chars
+    ]
+    assert set(default_chars) == set(chars), "Raw rank glyphs are missing from minecraft:default"
     existing = json.loads((FONT_DIR / "default.json").read_text(encoding="utf-8"))
     existing_chars = {
         char for provider in existing.get("providers", []) for row in provider.get("chars", []) for char in row
     }
     assert not existing_chars.intersection(chars), "Rank glyphs overlap an existing CleanResources glyph"
     assert all((BADGE_DIR / f"{badge_id}.png").is_file() for badge_id, *_ in RANKS)
+    for badge_id, *_ in RANKS:
+        badge = Image.open(BADGE_DIR / f"{badge_id}.png").convert("RGBA")
+        assert badge.size[1] == 10
+        assert all(badge.getpixel(corner)[3] == 255 for corner in (
+            (0, 0), (badge.width - 1, 0), (0, badge.height - 1),
+            (badge.width - 1, badge.height - 1),
+        )), f"{badge_id} does not have square opaque corners"
 
 
 def main() -> None:

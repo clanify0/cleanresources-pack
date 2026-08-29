@@ -7,3 +7,7 @@ python tools/build_packs.py
 ```
 
 Tagging a commit with `v*` runs the same verified build in GitHub Actions and publishes the four pack assets through GitHub Releases. CleanResources resolves each `.sha1` sidecar once at startup and caches the last known good hashes, so no player join performs a GitHub request.
+
+The rank characters `U+E100` through `U+E10C` are registered in both
+`cleanresources:rank_badges` and `minecraft:default`. This lets raw badge
+characters pasted into LuckPerms, TAB, or chat render without a font wrapper.
