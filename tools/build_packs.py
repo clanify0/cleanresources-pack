@@ -159,7 +159,13 @@ def zip_tree(source: Path, destination: Path) -> None:
     with zipfile.ZipFile(destination, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as archive:
         for path in sorted(source.rglob("*")):
             if path.is_file():
-                archive.write(path, path.relative_to(source).as_posix())
+                # Fixed metadata makes the release SHA-1 identical on Windows,
+                # Linux/GitHub Actions, and future rebuilds of unchanged assets.
+                info = zipfile.ZipInfo(path.relative_to(source).as_posix(), (2020, 1, 1, 0, 0, 0))
+                info.compress_type = zipfile.ZIP_DEFLATED
+                info.external_attr = 0o100644 << 16
+                archive.writestr(info, path.read_bytes(), compress_type=zipfile.ZIP_DEFLATED,
+                                 compresslevel=9)
 
 
 def build_variant(variant: str) -> tuple[Path, str]:
